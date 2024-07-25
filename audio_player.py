@@ -43,7 +43,24 @@ class AudioManager:
                 except PermissionError:
                     print(f"Couldn't remove {file_path} -- it is being used by another process")
 
-    async def play_audio_async(self, file_path):
+    async def audio_play_async(self, file_path):
         if not pygame.mixer.get_init():
             pygame.mixer.init(frequency = 48000, buffer = 1024)
-                    
+        pygame_sound = pygame.mixer.Sound(file_path)
+        pygame_sound.play()
+
+        _, ext = os.path.splitext(file_path) # Get the extension of this file
+        if ext.lower() == '.wav':
+            wav_file = sf.SoundFile(file_path)
+            file_length = wav_file.frames / wav_file.samplerate
+            wav_file.close()
+        elif ext.lower() == '.mp3':
+            mp3_file = MP3(file_path)
+            file_length = mp3_file.info.length
+        else:
+            print("Cannot play audio, unknown file type")
+            return
+        
+        await asyncio.sleep(file_length)
+
+       
